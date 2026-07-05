@@ -1,0 +1,1 @@
+"""FNT CLI commands package."""

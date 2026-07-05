@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "founder-note-toolkit"
+version = "1.0.0"
+description = "Help creators quickly turn long YouTube videos into viral short-form content."
+readme = "README.md"
+authors = [
+    { name = "Founder Note Toolkit Maintainers", email = "support@foundernote.com" }
+]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "typer[all]>=0.12.0",
+    "rich>=13.7.0",
+    "pydantic>=2.7.0",
+    "yt-dlp>=2024.12.06",
+    "google-generativeai>=0.8.0",
+    "openai>=1.12.0",
+]
+
+[project.scripts]
+fnt = "fnt.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fnt", "fnt.*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "N", "UP", "PL"]
+ignore = ["PLR0913", "PLR0915", "PLR0912", "PLR2004", "PLW0603", "E501", "PLC0415", "B008", "B904"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+warn_unused_configs = true
+disallow_untyped_defs = true
