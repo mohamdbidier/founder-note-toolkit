@@ -10,6 +10,7 @@ from rich.table import Table
 from fnt.commands.captions import app as captions_app
 from fnt.commands.clip import app as clip_app
 from fnt.commands.convert import app as convert_app
+from fnt.commands.doctor import app as doctor_app
 from fnt.commands.info import app as info_app
 from fnt.commands.metadata import app as metadata_app
 from fnt.commands.search import app as search_app
@@ -36,6 +37,7 @@ app.add_typer(viral_app, name="viral")
 app.add_typer(captions_app, name="captions")
 app.add_typer(titles_app, name="titles")
 app.add_typer(metadata_app, name="metadata")
+app.add_typer(doctor_app, name="doctor")
 
 # Config Command Group
 config_app = typer.Typer(help="Manage FNT configuration settings.")

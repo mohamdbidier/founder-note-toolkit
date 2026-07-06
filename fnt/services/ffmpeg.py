@@ -152,3 +152,122 @@ class FFmpegService:
         except subprocess.CalledProcessError as e:
             self.logger.error("FFmpeg subtitles burn failed: %s\nStderr: %s", e, e.stderr)
             raise RuntimeError(f"FFmpeg burning subtitles failed: {e.stderr}") from e
+
+    def validate_clip(self, filepath: Path, expected_duration: float, tolerance: float = 2.0) -> tuple[bool, str | None]:
+        """Validate the exported clip.
+
+        Checks:
+        - Output file exists
+        - Size > 0
+        - ffprobe can read it
+        - Duration matches expected clip (within tolerance)
+        - Video stream exists
+        - Audio stream exists
+        """
+        if not filepath.exists():
+            return False, f"Output file does not exist: {filepath}"
+        
+        try:
+            size_bytes = filepath.stat().st_size
+            if size_bytes == 0:
+                return False, f"Output file is empty (0 bytes): {filepath}"
+        except Exception as e:
+            return False, f"Failed to access file size: {e}"
+
+        # Run ffprobe to get format and stream info
+        cmd = [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_format",
+            "-show_streams",
+            "-of",
+            "json",
+            str(filepath),
+        ]
+        try:
+            import json
+            res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            data = json.loads(res.stdout)
+        except Exception as e:
+            return False, f"ffprobe failed to read the file: {e}"
+
+        # Check for video and audio streams
+        streams = data.get("streams", [])
+        has_video = any(s.get("codec_type") == "video" for s in streams)
+        has_audio = any(s.get("codec_type") == "audio" for s in streams)
+
+        if not has_video:
+            return False, "Validation failed: Video stream is missing."
+        if not has_audio:
+            return False, "Validation failed: Audio stream is missing."
+
+        # Check duration
+        format_info = data.get("format", {})
+        duration_str = format_info.get("duration")
+        if not duration_str:
+            return False, "Validation failed: Could not determine clip duration."
+
+        try:
+            actual_duration = float(duration_str)
+        except ValueError:
+            return False, f"Validation failed: Invalid duration value '{duration_str}'."
+
+        if abs(actual_duration - expected_duration) > tolerance:
+            return False, (
+                f"Validation failed: Clip duration ({actual_duration:.1f}s) "
+                f"does not match expected duration ({expected_duration:.1f}s)."
+            )
+
+        return True, None
+
+    def get_clip_info(self, filepath: Path) -> dict[str, str]:
+        """Query file metadata (size, duration, resolution) using ffprobe."""
+        info = {"size": "Unknown", "duration": "Unknown", "resolution": "Unknown"}
+        if not filepath.exists():
+            return info
+
+        import json
+        
+        try:
+            # File size formatted
+            size_bytes = filepath.stat().st_size
+            if size_bytes < 1024 * 1024:
+                info["size"] = f"{size_bytes / 1024:.1f} KB"
+            else:
+                info["size"] = f"{size_bytes / (1024 * 1024):.1f} MB"
+        except Exception:
+            pass
+
+        cmd = [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_format",
+            "-show_streams",
+            "-of",
+            "json",
+            str(filepath),
+        ]
+        try:
+            res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            data = json.loads(res.stdout)
+            
+            # Duration
+            duration_str = data.get("format", {}).get("duration")
+            if duration_str:
+                secs = float(duration_str)
+                info["duration"] = f"{secs:.1f}s"
+
+            # Resolution
+            for s in data.get("streams", []):
+                if s.get("codec_type") == "video":
+                    w = s.get("width")
+                    h = s.get("height")
+                    if w and h:
+                        info["resolution"] = f"{w}x{h}"
+                        break
+        except Exception:
+            pass
+
+        return info

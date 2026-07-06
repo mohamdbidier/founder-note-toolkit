@@ -37,7 +37,31 @@ FNT lets you download specific clips, extract and format transcripts, analyze sp
 
 FNT is designed to be extremely lightweight by default. It can be installed as a bare-minimum core package or with optional dependency groups depending on your requirements (ideal for resource-constrained platforms like Termux).
 
-### System Dependencies
+### Android & Termux Installation
+
+To run FNT on an Android tablet or phone using Termux:
+
+1. **Install Termux**: Download Termux from [F-Droid](https://f-droid.org/) (do not use the outdated Google Play version).
+2. **Initialize Storage**: Set up shared storage link by running:
+   ```bash
+   termux-setup-storage
+   ```
+   *Make sure to accept the Android storage permission prompt.*
+3. **Install Packages**: Update the package manager and install Python, FFmpeg, and other tools:
+   ```bash
+   pkg update
+   pkg install python ffmpeg termux-api
+   ```
+4. **Install FNT**:
+   ```bash
+   pip install founder-note-toolkit
+   ```
+5. **Verify System Health**: Run the doctor tool to verify installation:
+   ```bash
+   fnt doctor
+   ```
+
+### General System Dependencies
 FNT requires **FFmpeg** to extract clips, burn captions, and transcode video.
 * **macOS**: `brew install ffmpeg`
 * **Ubuntu/Debian**: `sudo apt update && sudo apt install ffmpeg`
@@ -114,6 +138,19 @@ chmod +x install.sh
    pip install -e .[full]
    ```
 
+### Troubleshooting & Storage Permissions
+
+- **Android Storage Is Not Available**: If you see the message:
+  ```
+  Android storage is not available.
+  Run:
+  termux-setup-storage
+  then grant permission.
+  ```
+  Run the command `termux-setup-storage` in Termux, and make sure that you grant storage permission in Android settings for Termux.
+- **FFmpeg/FFprobe Missing**: If FNT reports that FFmpeg is missing, verify installation by running `ffmpeg -version`. Install it via `pkg install ffmpeg` (Termux), `brew install ffmpeg` (macOS), or `apt install ffmpeg` (Linux).
+- **Network Error**: Verify your internet connection or check if the YouTube video is private or age-restricted, as these videos cannot be scraped without authentication parameters.
+
 ---
 
 ## Usage
@@ -124,31 +161,34 @@ FNT uses `typer` to expose subcommands. Run the tool using `fnt` (or `python -m 
 # General help
 fnt --help
 
-# 1. Download metadata
-fnt metadata "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+# 1. Run diagnostic checks
+fnt doctor
 
-# 2. Get video info & streams
+# 2. Download metadata (with optional output directory override)
+fnt metadata "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --output "/storage/emulated/0/Download/FounderNote"
+
+# 3. Get video info & streams
 fnt info "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
-# 3. Download transcripts (English and Arabic)
+# 4. Download transcripts (English and Arabic)
 fnt transcript "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --lang "en,ar"
 
-# 4. Search transcripts
-fnt search ~/Downloads/FounderNote/Rick_Astley/transcript.json "never"
+# 5. Search transcripts
+fnt search /storage/emulated/0/Download/FounderNote/Rick_Astley/transcript.json "never"
 
-# 5. Suggest viral segments
-fnt viral ~/Downloads/FounderNote/Rick_Astley/transcript.json
+# 6. Suggest viral segments
+fnt viral /storage/emulated/0/Download/FounderNote/Rick_Astley/transcript.json
 
-# 6. Generate viral title options
-fnt titles ~/Downloads/FounderNote/Rick_Astley/transcript.json --start "00:00:10" --end "00:00:40"
+# 7. Generate viral title options
+fnt titles /storage/emulated/0/Download/FounderNote/Rick_Astley/transcript.json --start "00:00:10" --end "00:00:40"
 
-# 7. Download a 30s clip (Interactive prompts if options are missing)
-fnt clip --url "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --start "00:00:10" --end "00:00:40" --name "rick_clip"
+# 8. Download a 30s clip (Interactive prompts if options are missing, with output path override)
+fnt clip --url "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --start "00:00:10" --end "00:00:40" --name "rick_clip" -o "/storage/emulated/0/Download/FounderNote"
 
-# 8. Burn subtitles into the clip
-fnt captions ~/Downloads/FounderNote/Rick_Astley/rick_clip.mp4 ~/Downloads/FounderNote/Rick_Astley/transcript_en.srt
+# 9. Burn subtitles into the clip
+fnt captions /storage/emulated/0/Download/FounderNote/Rick_Astley/rick_clip.mp4 /storage/emulated/0/Download/FounderNote/Rick_Astley/transcript_en.srt
 
-# 9. Convert arbitrary video files
+# 10. Convert arbitrary video files
 fnt convert my_input.mov -o converted_output.mp4
 ```
 

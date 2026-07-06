@@ -27,6 +27,9 @@ def transcript(
     output_format: str = typer.Option(
         "all", "--format", "-f", help="Output format: txt, json, srt, or all"
     ),
+    output: Path | None = typer.Option(
+        None, "--output", "-o", help="Override default output directory path"
+    ),
 ) -> None:
     """Download transcript/subtitles (manual or auto-generated) in English and Arabic and format them."""
     if ctx.invoked_subcommand is not None:
@@ -35,7 +38,7 @@ def transcript(
     config = load_config()
     yt_service = YoutubeService()
     transcript_service = TranscriptService()
-    storage_service = StorageService(Path(config.download_folder))
+    storage_service = StorageService(output or Path(config.download_folder))
 
     langs = [lang.strip() for lang in languages.split(",") if lang.strip()]
 
@@ -45,11 +48,19 @@ def transcript(
         try:
             metadata = yt_service.get_video_metadata(url)
         except Exception as e:
-            console.print(f"[bold red]Error:[/bold red] Failed to load metadata: {e}")
+            from fnt.commands.clip import get_friendly_ytdl_error
+            friendly_err = get_friendly_ytdl_error(e)
+            console.print(f"[bold red]Error: {friendly_err}[/bold red]")
             raise typer.Exit(code=1)
 
     # Establish folder
-    paths = storage_service.get_file_paths(metadata.title)
+    try:
+        paths = storage_service.get_file_paths(metadata.title)
+    except PermissionError as e:
+        console.print("[bold red]Error: Storage permission denied[/bold red]")
+        console.print(str(e))
+        raise typer.Exit(code=1)
+
     episode_dir = paths["dir"]
 
     console.print(f"🎬 [bold]Title:[/bold] {metadata.title}")
