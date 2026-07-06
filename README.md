@@ -48,22 +48,29 @@ FNT requires **FFmpeg** to extract clips, burn captions, and transcode video.
 
 You can install FNT using different target options:
 
-* **Core installation** (Default, lightweight, no Rust/C++ compilation required):
-  ```bash
-  pip install founder-note-toolkit
-  ```
-* **AI installation** (Adds OpenAI and Google Gemini support):
-  ```bash
-  pip install "founder-note-toolkit[ai]"
-  ```
-* **Developer installation** (Adds test and linting suites):
-  ```bash
-  pip install "founder-note-toolkit[dev]"
-  ```
-* **Full installation** (Includes all AI and developer dependencies):
-  ```bash
-  pip install "founder-note-toolkit[full]"
-  ```
+Core install
+
+```bash
+pip install founder-note-toolkit
+```
+
+AI install
+
+```bash
+pip install "founder-note-toolkit[ai]"
+```
+
+Developer install
+
+```bash
+pip install "founder-note-toolkit[dev]"
+```
+
+Full install
+
+```bash
+pip install "founder-note-toolkit[full]"
+```
 
 ### 2. Automatic Script Installation
 

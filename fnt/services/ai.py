@@ -38,6 +38,9 @@ class AIService:
                 genai.configure(api_key=self.gemini_key)  # type: ignore[attr-defined]
                 self._gemini_client = genai.GenerativeModel("gemini-1.5-flash")  # type: ignore[attr-defined]
                 self.logger.info("Gemini AI client successfully initialized.")
+            except ImportError:
+                print("AI features are not installed.\nRun:\npip install 'founder-note-toolkit[ai]'")
+                self._gemini_client = None
             except Exception as e:
                 self.logger.error("Failed to initialize Gemini client: %s", e)
         return self._gemini_client
@@ -52,6 +55,9 @@ class AIService:
 
                 self._openai_client = OpenAI(api_key=self.openai_key)
                 self.logger.info("OpenAI client successfully initialized.")
+            except ImportError:
+                print("AI features are not installed.\nRun:\npip install 'founder-note-toolkit[ai]'")
+                self._openai_client = None
             except Exception as e:
                 self.logger.error("Failed to initialize OpenAI client: %s", e)
         return self._openai_client

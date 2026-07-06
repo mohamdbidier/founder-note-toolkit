@@ -46,7 +46,7 @@ def test_fallback_generate_titles() -> None:
     assert titles[0].hook_type == "Curiosity"
 
 
-def test_graceful_failure_when_ai_missing() -> None:
+def test_graceful_failure_when_ai_missing(capsys: Any) -> None:
     """Verify AIService doesn't crash when AI libraries are missing and key is set."""
     import builtins
     from unittest.mock import patch
@@ -67,6 +67,10 @@ def test_graceful_failure_when_ai_missing() -> None:
         # These client getters should return None instead of throwing ImportError
         assert service._get_gemini_client() is None
         assert service._get_openai_client() is None
+
+        captured = capsys.readouterr()
+        assert "AI features are not installed." in captured.out
+        assert "pip install 'founder-note-toolkit[ai]'" in captured.out
 
 
 def test_cli_viral_command_notice_when_ai_missing(tmp_path: Path) -> None:

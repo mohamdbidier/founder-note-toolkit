@@ -43,15 +43,9 @@ def viral(
     openai_installed = importlib.util.find_spec("openai") is not None
 
     if gemini_key and not gemini_installed:
-        console.print(
-            "[yellow]Warning: Gemini API key is configured, but 'google-generativeai' is not installed.[/yellow]"
-        )
-        console.print("To use Gemini, please install AI dependencies: [bold]pip install \"founder-note-toolkit[ai]\"[/bold]\n")
+        console.print("AI features are not installed.\nRun:\npip install 'founder-note-toolkit[ai]'\n")
     elif openai_key and not openai_installed:
-        console.print(
-            "[yellow]Warning: OpenAI API key is configured, but 'openai' is not installed.[/yellow]"
-        )
-        console.print("To use OpenAI, please install AI dependencies: [bold]pip install \"founder-note-toolkit[ai]\"[/bold]\n")
+        console.print("AI features are not installed.\nRun:\npip install 'founder-note-toolkit[ai]'\n")
     elif not gemini_installed and not openai_installed:
         console.print(
             "[yellow]Notice: Optional AI dependencies ('google-generativeai', 'openai') are missing. Using rules-based fallback heuristics.[/yellow]"
