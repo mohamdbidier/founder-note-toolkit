@@ -66,9 +66,48 @@ def format_timestamp(seconds: float, include_ms: bool = False) -> str:
     return f"{hours:02d}:{minutes:02d}:{secs:02d}"
 
 
-def sanitize_filename(name: str) -> str:
-    """Sanitize string to be safe for filenames."""
-    # Remove emojis, special characters, replace spaces with underscores
-    sanitized = re.sub(r'[\\/*?:"<>|]', "", name)
+def sanitize_filename(name: str, max_length: int = 50) -> str:
+    """Sanitize string to be safe for filenames, preventing path length and reserved name issues.
+
+    Args:
+        name: Raw filename string to sanitize.
+        max_length: Maximum allowed length for the sanitized name.
+    """
+    # Remove characters unsafe for filesystem names
+    sanitized = re.sub(r'[\\/*?:"<>|\x00-\x1f]', "", name)
     sanitized = re.sub(r"\s+", "_", sanitized)
+
+    # Windows reserved device names check
+    reserved = {
+        "CON",
+        "PRN",
+        "AUX",
+        "NUL",
+        "COM1",
+        "COM2",
+        "COM3",
+        "COM4",
+        "COM5",
+        "COM6",
+        "COM7",
+        "COM8",
+        "COM9",
+        "LPT1",
+        "LPT2",
+        "LPT3",
+        "LPT4",
+        "LPT5",
+        "LPT6",
+        "LPT7",
+        "LPT8",
+        "LPT9",
+    }
+    base_upper = sanitized.upper()
+    if base_upper in reserved:
+        sanitized = f"{sanitized}_safe"
+
+    # Truncate to protect against MAX_PATH restrictions on Windows
+    if len(sanitized) > max_length:
+        sanitized = sanitized[:max_length].rstrip("_")
+
     return sanitized.strip("_")

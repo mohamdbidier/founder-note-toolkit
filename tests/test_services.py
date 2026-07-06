@@ -41,6 +41,12 @@ def test_converter_service_transcode(tmp_path: Path) -> None:
 
     service = ConverterService(ffmpeg_service=mock_ffmpeg)
 
+    # Mock conversion side effect to write content to the output file (simulating FFmpeg success)
+    def touch_output(inp: Path, out: Path) -> None:
+        out.write_text("dummy video content")
+
+    mock_ffmpeg.convert_to_h264_aac.side_effect = touch_output
+
     converted = service.convert_video(input_file, output_file, force=False)
     assert converted
     mock_ffmpeg.convert_to_h264_aac.assert_called_once_with(input_file, output_file)

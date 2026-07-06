@@ -31,8 +31,13 @@ def load_config() -> AppConfig:
         defaults.update(data)
         return AppConfig(**defaults)
     except Exception:
-        # If parsing fails, return default configuration
-        return get_default_config()
+        # If parsing fails (e.g. corrupted file), attempt to restore and recover with defaults
+        config = get_default_config()
+        try:
+            save_config(config)
+        except Exception:
+            pass
+        return config
 
 
 def save_config(config: AppConfig) -> None:

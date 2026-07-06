@@ -122,14 +122,11 @@ class FFmpegService:
         if not srt_path.exists():
             raise FileNotFoundError(f"SRT file not found: {srt_path}")
 
-        # Escape SRT path for ffmpeg subtitles filter (relative path is safer)
-        # We can pass the path relative to the current working directory to avoid path escapes
-        try:
-            rel_srt = srt_path.resolve().relative_to(Path.cwd())
-            srt_filter_path = str(rel_srt).replace("\\", "/")
-        except ValueError:
-            # Fallback if not on same drive/relative
-            srt_filter_path = str(srt_path.resolve()).replace("\\", "/").replace(":", "\\:")
+        # Escape SRT path for FFmpeg subtitles filter syntax.
+        # FFmpeg parses this argument through its filtergraph engine, requiring backslashes
+        # to be normalized, colons to be escaped (especially on Windows), and single quotes to be escaped.
+        abs_path = str(srt_path.resolve()).replace("\\", "/")
+        srt_filter_path = abs_path.replace(":", "\\:").replace("'", "'\\\\''")
 
         cmd = [
             "ffmpeg",

@@ -62,4 +62,11 @@ class ConverterService:
 
         # Perform transcoding
         self.ffmpeg.convert_to_h264_aac(input_path, output_path)
+
+        # Validate output file existence and non-zero size
+        if not output_path.exists() or output_path.stat().st_size == 0:
+            raise RuntimeError(
+                f"Transcoding finished but output video file was not created or is empty: {output_path}"
+            )
+
         return True
