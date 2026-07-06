@@ -30,13 +30,41 @@ def viral(
         )
         raise typer.Exit(code=1)
 
+    import importlib.util
+    import os
+
+    from fnt.config import load_config
+
+    config = load_config()
+    gemini_key = config.gemini_api_key or os.getenv("GEMINI_API_KEY")
+    openai_key = config.openai_api_key or os.getenv("OPENAI_API_KEY")
+
+    gemini_installed = importlib.util.find_spec("google.generativeai") is not None
+    openai_installed = importlib.util.find_spec("openai") is not None
+
+    if gemini_key and not gemini_installed:
+        console.print(
+            "[yellow]Warning: Gemini API key is configured, but 'google-generativeai' is not installed.[/yellow]"
+        )
+        console.print("To use Gemini, please install AI dependencies: [bold]pip install \"founder-note-toolkit[ai]\"[/bold]\n")
+    elif openai_key and not openai_installed:
+        console.print(
+            "[yellow]Warning: OpenAI API key is configured, but 'openai' is not installed.[/yellow]"
+        )
+        console.print("To use OpenAI, please install AI dependencies: [bold]pip install \"founder-note-toolkit[ai]\"[/bold]\n")
+    elif not gemini_installed and not openai_installed:
+        console.print(
+            "[yellow]Notice: Optional AI dependencies ('google-generativeai', 'openai') are missing. Using rules-based fallback heuristics.[/yellow]"
+        )
+        console.print("To enable advanced AI features, run: [bold]pip install \"founder-note-toolkit[ai]\"[/bold]\n")
+
     analyzer = AnalyzerService()
 
     console.print("\n[bold purple]🧠 Analyzing Transcript for Viral Clips...[/bold purple]")
     console.print(f"📄 [bold]Source file:[/bold] {transcript_json.name}\n")
 
     with console.status(
-        "[bold green]Running AI hooks and speech analytics...[/bold green]", spinner="brain"
+        "[bold green]Running AI hooks and speech analytics...[/bold green]", spinner="dots"
     ):
         try:
             segments = analyzer.analyze_saved_transcript(transcript_json)

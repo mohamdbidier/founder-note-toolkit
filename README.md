@@ -35,31 +35,76 @@ FNT lets you download specific clips, extract and format transcripts, analyze sp
 
 ## Installation
 
-### Automatic Installation
+FNT is designed to be extremely lightweight by default. It can be installed as a bare-minimum core package or with optional dependency groups depending on your requirements (ideal for resource-constrained platforms like Termux).
 
-Use the provided installation script to verify dependencies, create a virtual environment, and install `fnt` automatically:
+### System Dependencies
+FNT requires **FFmpeg** to extract clips, burn captions, and transcode video.
+* **macOS**: `brew install ffmpeg`
+* **Ubuntu/Debian**: `sudo apt update && sudo apt install ffmpeg`
+* **Windows**: Install via `winget install Gyan.FFmpeg` or download from official sources and add to PATH.
+* **Termux (Android)**: `pkg install ffmpeg`
+
+### 1. Installation via pip
+
+You can install FNT using different target options:
+
+* **Core installation** (Default, lightweight, no Rust/C++ compilation required):
+  ```bash
+  pip install founder-note-toolkit
+  ```
+* **AI installation** (Adds OpenAI and Google Gemini support):
+  ```bash
+  pip install "founder-note-toolkit[ai]"
+  ```
+* **Developer installation** (Adds test and linting suites):
+  ```bash
+  pip install "founder-note-toolkit[dev]"
+  ```
+* **Full installation** (Includes all AI and developer dependencies):
+  ```bash
+  pip install "founder-note-toolkit[full]"
+  ```
+
+### 2. Automatic Script Installation
+
+Use the provided installer script `install.sh` to automatically set up a virtual environment and install FNT. The script supports flags matching the pip installation modes:
 
 ```bash
 chmod +x install.sh
+
+# Install core package (default)
 ./install.sh
+
+# Install with AI extras
+./install.sh --ai
+
+# Install with development tools
+./install.sh --dev
+
+# Install with everything
+./install.sh --full
 ```
 
-### Manual Installation
+### 3. Manual Source Installation
 
-1. **Install System Dependencies (FFmpeg)**:
-   * **macOS**: `brew install ffmpeg`
-   * **Ubuntu/Debian**: `sudo apt update && sudo apt install ffmpeg`
-   
-2. **Setup Python Virtual Environment**:
+1. **Clone the repository and enter the directory**:
+   ```bash
+   git clone https://github.com/mohamdbidier/founder-note-toolkit.git
+   cd founder-note-toolkit
+   ```
+2. **Setup a virtual environment**:
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate
    ```
-
-3. **Install Package**:
+3. **Install with desired options**:
    ```bash
-   pip install -r requirements.txt
+   # Core
    pip install -e .
+   # Or with AI
+   pip install -e .[ai]
+   # Or Full
+   pip install -e .[full]
    ```
 
 ---

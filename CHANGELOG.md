@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-07-06
+
+### Added
+- Created optional dependency extras for `ai` (`google-generativeai`, `openai`), `dev` (linters, testers, formatters), and `full` (combines AI and developer tools).
+- Added local validation checks for optional AI packages inside the `viral` and `titles` CLI commands, displaying a user-friendly message on how to install them if missing.
+- Added new unit tests verifying CLI startup, optional dependency behaviors, and graceful fallback messages when AI dependencies are not installed.
+
+### Changed
+- Refactored `pyproject.toml` to remove AI packages (`google-generativeai`, `openai`) from default dependencies to ensure a lightweight and Termux-friendly installation.
+- Replaced `typer[all]` with `typer` in default dependencies to avoid unnecessary dependency installation.
+- Updated `requirements.txt` to only include the core lightweight dependencies.
+- Refactored `install.sh` to support installation modes (`--ai`, `--dev`, `--full`), output friendly warning messages, and verify python version and post-installation sanity of `yt-dlp`.
+- Bumped package version to `1.1.0` in both `pyproject.toml` and `fnt/__init__.py`.
+
+### Fixed
+- Fixed a bug in `fnt/commands/viral.py` where a non-existent spinner named `"brain"` caused the command to crash. Changed the spinner to the standard `"dots"`.
+- Cleaned up un-sorted/un-formatted imports across files to pass strict Ruff checking.
+- Added strict type annotations to local test helper functions to pass strict Mypy checks.
+
 ## [1.0.0] - 2026-07-05
 
 ### Added

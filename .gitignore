@@ -53,6 +53,7 @@ Downloads/
 *.srt
 *.json
 *.txt
+!requirements.txt
 *.jpg
 
 # User configurations / local secrets

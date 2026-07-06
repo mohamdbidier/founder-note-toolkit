@@ -14,6 +14,29 @@ echo -e "${BLUE}===============================================${NC}"
 echo -e "${BLUE}     Founder Note Toolkit (FNT) Installer     ${NC}"
 echo -e "${BLUE}===============================================${NC}"
 
+# Parse optional dependency flags
+INSTALL_EXTRA=""
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --ai) INSTALL_EXTRA="[ai]"; shift ;;
+        --dev) INSTALL_EXTRA="[dev]"; shift ;;
+        --full) INSTALL_EXTRA="[full]"; shift ;;
+        -h|--help)
+            echo "Usage: ./install.sh [OPTION]"
+            echo "Options:"
+            echo "  --ai      Install with AI dependencies (google-generativeai, openai)"
+            echo "  --dev     Install with developer tools (pytest, black, ruff, mypy)"
+            echo "  --full    Install with both AI and developer tools"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Error: Unknown parameter passed: $1${NC}"
+            echo "Usage: ./install.sh [--ai | --dev | --full]"
+            exit 1
+            ;;
+    esac
+done
+
 # 1. Verify Python Version (>= 3.12)
 echo -e "\n🔍 Checking Python version..."
 if command -v python3 &>/dev/null; then
@@ -64,17 +87,32 @@ echo -e "\n⚙️ Updating packaging tools and dependencies..."
 pip install --upgrade pip setuptools wheel
 if [ -f "requirements.txt" ]; then
     pip install -r requirements.txt
-    echo -e "${GREEN}✓ Dependencies installed from requirements.txt.${NC}"
+    echo -e "${GREEN}✓ Core dependencies installed from requirements.txt.${NC}"
 else
     echo -e "${YELLOW}Warning: requirements.txt not found. Installing from setup config...${NC}"
 fi
 
-# 5. Install package in editable mode
-echo -e "\n🚀 Installing FNT CLI..."
-pip install -e .
+# 5. Install package in editable mode (with extras if specified)
+if [ -n "$INSTALL_EXTRA" ]; then
+    echo -e "\n🚀 Installing FNT CLI with extra dependencies: ${BLUE}${INSTALL_EXTRA}${NC}..."
+    pip install -e ."$INSTALL_EXTRA"
+else
+    echo -e "\n🚀 Installing FNT CLI in default (lightweight) mode..."
+    pip install -e .
+fi
 echo -e "${GREEN}✓ FNT installed in editable mode.${NC}"
 
-# 6. Verify CLI Installation
+# 6. Verify yt-dlp installation in the virtual environment
+echo -e "\n🔍 Verifying yt-dlp installation..."
+if "$VENV_DIR/bin/python" -c "import yt_dlp" &>/dev/null; then
+    YT_DLP_VER=$("$VENV_DIR/bin/yt-dlp" --version 2>/dev/null || echo "installed")
+    echo -e "${GREEN}✓ yt-dlp verified (version: $YT_DLP_VER).${NC}"
+else
+    echo -e "${RED}Error: yt-dlp failed to install or is not importable in the virtual environment.${NC}"
+    exit 1
+fi
+
+# 7. Verify CLI Installation
 if command -v fnt &>/dev/null; then
     echo -e "${GREEN}✓ CLI command 'fnt' is active!${NC}"
 else
