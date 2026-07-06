@@ -124,3 +124,16 @@ def test_clip_validation(tmp_path: Path) -> None:
         ok, err = ffmpeg_service.validate_clip(valid_file, 10.0)
         assert ok
         assert err is None
+
+
+def test_android_storage_redirection() -> None:
+    """Test that on Android, default internal paths redirect to shared storage."""
+    with patch("fnt.constants.is_android", return_value=True):
+        # Default config resolves to desktop/internal downloads folder.
+        # It should automatically redirect to /storage/emulated/0/Download/FounderNote.
+        storage = StorageService()
+        assert storage.base_dir == Path("/storage/emulated/0/Download/FounderNote")
+
+        # Explicitly requested custom folder via argument should NOT be redirected.
+        storage_custom = StorageService(download_dir=Path("/data/data/com.termux/files/home/custom_folder"))
+        assert storage_custom.base_dir == Path("/data/data/com.termux/files/home/custom_folder")

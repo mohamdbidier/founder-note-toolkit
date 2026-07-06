@@ -20,6 +20,7 @@ class AppConfig(ModelMixin):
     """FNT Application Configuration Model."""
 
     download_folder: str = ""
+    output_directory: str = ""
     preferred_codec: str = "avc"
     theme: str = "dark"
     gemini_api_key: str | None = None

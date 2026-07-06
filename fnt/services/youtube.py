@@ -166,17 +166,23 @@ class YoutubeService:
                 if not info:
                     raise ValueError("Download failed, could not extract info")
 
-                # Reconstruct path that yt-dlp actually output
-                # Since we forced mp4 merge output, final merged output is .temp.mp4
-                output_path.with_suffix(".temp.mp4")
-
-                # Wait, if only one stream was downloaded, yt-dlp might not run merger,
-                # let's look for whatever matches temp_out base
-                downloaded_files = list(output_path.parent.glob(f"{output_path.stem}.temp.*"))
-                if not downloaded_files:
-                    raise FileNotFoundError("Could not find downloaded temporary file")
-
-                temp_file = downloaded_files[0]
+                # Since we forced mp4 merge output, the final merged output should be .temp.mp4
+                temp_file = output_path.with_suffix(".temp.mp4")
+                if not temp_file.exists():
+                    # Fallback to searching, but filter out partial/stream files
+                    downloaded_files = list(output_path.parent.glob(f"{output_path.stem}.temp.*"))
+                    # Filter out .part and .ytdl files
+                    downloaded_files = [
+                        f for f in downloaded_files 
+                        if not f.name.endswith(".part") 
+                        and not f.name.endswith(".ytdl")
+                    ]
+                    if not downloaded_files:
+                        raise FileNotFoundError("Could not find downloaded temporary file")
+                    
+                    # Sort candidates so that the most likely merged file (shortest name) comes first
+                    downloaded_files.sort(key=lambda x: len(x.name))
+                    temp_file = downloaded_files[0]
 
                 # Check actual downloaded video codec
                 # info gets populated. We want to check 'requested_formats' or 'vcodec'

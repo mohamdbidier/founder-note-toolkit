@@ -12,7 +12,13 @@ from fnt.models import AppConfig
 
 def get_default_config() -> AppConfig:
     """Get the default configuration."""
-    return AppConfig(download_folder=str(DEFAULT_DOWNLOAD_DIR), preferred_codec="avc", theme="dark")
+    default_dir = str(DEFAULT_DOWNLOAD_DIR)
+    return AppConfig(
+        download_folder=default_dir,
+        output_directory=default_dir,
+        preferred_codec="avc",
+        theme="dark",
+    )
 
 
 def load_config() -> AppConfig:

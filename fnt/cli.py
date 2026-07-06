@@ -56,6 +56,7 @@ def config_show() -> None:
     table.add_column("Value", style="green")
 
     table.add_row("download_folder", config.download_folder)
+    table.add_row("output_directory", config.output_directory)
     table.add_row("preferred_codec", config.preferred_codec)
     table.add_row("theme", config.theme)
     table.add_row("gemini_api_key", "********" if config.gemini_api_key else "Not set")

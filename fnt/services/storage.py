@@ -14,10 +14,27 @@ class StorageService:
 
     def __init__(self, download_dir: Path | None = None):
         if download_dir:
-            self.base_dir = download_dir
+            self.base_dir = Path(download_dir)
         else:
+            from fnt.constants import is_android
             config = load_config()
-            self.base_dir = Path(config.download_folder)
+            dir_str = config.output_directory or config.download_folder
+            
+            if is_android():
+                try:
+                    resolved_path = Path(dir_str).expanduser().resolve()
+                    internal_home = Path.home().resolve()
+                    if (
+                        dir_str == "~/Downloads/FounderNote"
+                        or str(dir_str).startswith("/data/data/com.termux/files/home")
+                        or internal_home in resolved_path.parents
+                        or resolved_path == internal_home
+                    ) and not (str(resolved_path).startswith("/storage/emulated") or str(resolved_path).startswith("/sdcard")):
+                        dir_str = "/storage/emulated/0/Download/FounderNote"
+                except Exception:
+                    if not (dir_str.startswith("/storage/emulated") or dir_str.startswith("/sdcard")):
+                        dir_str = "/storage/emulated/0/Download/FounderNote"
+            self.base_dir = Path(dir_str)
 
     def check_android_storage(self) -> tuple[bool, str | None]:
         """Check if Android storage is initialized and writable."""

@@ -35,6 +35,17 @@ class FFmpegService:
 
         codecs = {"video": "unknown", "audio": "none"}
 
+        import time
+
+        # Wait for file to become non-empty to ensure filesystem flush
+        for attempt in range(5):
+            try:
+                if video_path.stat().st_size > 0:
+                    break
+            except Exception:
+                pass
+            time.sleep(0.1)
+
         # Detect video codec
         cmd_v = [
             "ffprobe",
@@ -45,16 +56,25 @@ class FFmpegService:
             "-show_entries",
             "stream=codec_name",
             "-of",
-            "default=noprint_wrappers=1:keyval_1=1",
+            "default=noprint_wrappers=1:nokey=1",
             str(video_path),
         ]
-        try:
-            res_v = subprocess.run(cmd_v, capture_output=True, text=True, check=True)
+        res_v = None
+        for attempt in range(3):
+            try:
+                res_v = subprocess.run(cmd_v, capture_output=True, text=True, check=True)
+                break
+            except subprocess.SubprocessError as e:
+                if attempt == 2:
+                    stderr_msg = getattr(e, "stderr", "")
+                    self.logger.warning("ffprobe failed to read video stream info: %s\nStderr: %s", e, stderr_msg)
+                else:
+                    time.sleep(0.1)
+
+        if res_v and res_v.returncode == 0:
             val = res_v.stdout.strip()
             if val:
                 codecs["video"] = val.split("=")[-1]
-        except subprocess.SubprocessError as e:
-            self.logger.warning("ffprobe failed to read video stream info: %s", e)
 
         # Detect audio codec
         cmd_a = [
@@ -66,16 +86,25 @@ class FFmpegService:
             "-show_entries",
             "stream=codec_name",
             "-of",
-            "default=noprint_wrappers=1:keyval_1=1",
+            "default=noprint_wrappers=1:nokey=1",
             str(video_path),
         ]
-        try:
-            res_a = subprocess.run(cmd_a, capture_output=True, text=True, check=True)
+        res_a = None
+        for attempt in range(3):
+            try:
+                res_a = subprocess.run(cmd_a, capture_output=True, text=True, check=True)
+                break
+            except subprocess.SubprocessError as e:
+                if attempt == 2:
+                    stderr_msg = getattr(e, "stderr", "")
+                    self.logger.warning("ffprobe failed to read audio stream info: %s\nStderr: %s", e, stderr_msg)
+                else:
+                    time.sleep(0.1)
+
+        if res_a and res_a.returncode == 0:
             val = res_a.stdout.strip()
             if val:
                 codecs["audio"] = val.split("=")[-1]
-        except subprocess.SubprocessError as e:
-            self.logger.warning("ffprobe failed to read audio stream info: %s", e)
 
         return codecs
 
