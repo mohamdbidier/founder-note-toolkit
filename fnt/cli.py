@@ -74,7 +74,8 @@ def config_set(
     from fnt.models import AppConfig
 
     # Verify key exists on config model
-    valid_keys = list(AppConfig.model_fields.keys())
+    import dataclasses
+    valid_keys = [f.name for f in dataclasses.fields(AppConfig)]
     if key not in valid_keys:
         console.print(f"[bold red]Error:[/bold red] '{key}' is not a valid configuration key.")
         console.print(f"Valid keys: {', '.join(valid_keys)}")

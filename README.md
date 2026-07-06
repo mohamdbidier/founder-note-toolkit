@@ -175,7 +175,7 @@ fnt config set openai_api_key "sk-proj-..."
 ## Architecture & Code Quality
 
 FNT is developed adhering to:
-* **Clean Architecture**: Decoupled commands (CLI Controller) from the Business Logic (Services) and Domain Data (Pydantic Models).
+* **Clean Architecture**: Decoupled commands (CLI Controller) from the Business Logic (Services) and Domain Data (Dataclasses).
 * **SOLID Principles**: Single Responsibility Services (e.g. `FFmpegService`, `YoutubeService`, `MetadataService`).
 * **Type Hints**: Fully-typed codebase conforming to `mypy` strict configurations.
 * **Testing**: Comprehensive unit tests covering business rules and CLI bindings.
